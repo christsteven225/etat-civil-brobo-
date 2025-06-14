@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Espace Administrateur</title>
+<style>
+  /* Reset */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body, html {
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #FFD580, #ffffff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+  }
+  .container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    max-width: 350px;
+    width: 100%;
+    padding: 30px 25px;
+    text-align: center;
+    user-select: none;
+  }
+  .container h1 {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  .container p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  .btn-group {
+    display: flex;
+    justify-content: space-around;
+    gap: 15px;
+  }
+  button {
+    flex: 1;
+    padding: 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  button#retour {
+    background: #e0e0e0;
+    color: #333;
+  }
+  button#retour:hover, button#retour:focus {
+    background: #c6c6c6;
+    outline: none;
+  }
+  button#continuer {
+    background: #ff7f00;
+    color: white;
+    box-shadow: 0 5px 15px rgba(255,127,0,0.6);
+  }
+  button#continuer:hover, button#continuer:focus {
+    background: #e67300;
+    outline: none;
+  }
+  @media (max-width: 400px) {
+    .container {
+      padding: 25px 15px;
+    }
+    button {
+      font-size: 0.95rem;
+      padding: 10px 0;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container" role="alertdialog" aria-labelledby="dialogTitle" aria-describedby="dialogDesc" tabindex="0">
+    <h1 id="dialogTitle">Espace Administrateur</h1>
+    <p id="dialogDesc">Ce espace est réservé aux administrateurs, veuillez faire un retour ou continuer.</p>
+    <div class="btn-group">
+      <button id="retour" type="button" aria-label="Bouton Retour"><a href="../View/index.html">Retour</a></button>
+      <button id="continuer" type="button" aria-label="Bouton Continuer"><a href="../admin/admin_login.php">Continuer</a></button>
+    </div>
+  </div>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact - Mairie de Brobo</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#3b82f6',secondary:'#64748b'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+.custom-checkbox {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.custom-checkbox.checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+.custom-checkbox.checked::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e5e7eb;
+    transition: .4s;
+    border-radius: 24px;
+}
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .switch-slider {
+    background-color: #3b82f6;
+}
+input:checked + .switch-slider:before {
+    transform: translateX(24px);
+}
+</style>
+</head>
+<body class="bg-white shadow-sm sticky top-0 z-50">
+<!-- Assistant Modal -->
+<div id="assistantModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="fixed bottom-0 right-0 mb-4 mr-4 bg-white rounded-lg shadow-xl w-96 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-primary text-white">
+            <h3 class="font-medium">Assistant Virtuel</h3>
+            <button onclick="toggleAssistant()" class="text-white hover:text-gray-200">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+        <div class="p-6 h-96 overflow-y-auto" id="chatMessages">
+            <div class="flex flex-col space-y-4">
+                <div class="flex items-start">
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white mr-3">
+                        <i class="ri-customer-service-2-line"></i>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                        <p>Bonjour ! Je suis votre assistant virtuel. Comment puis-je vous aider concernant vos demandes ou questions à la mairie de Yamoussoukro ?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-200 bg-white">
+            <form id="assistantForm" class="flex space-x-2">
+                <input type="text" id="messageInput" placeholder="Écrivez votre message..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition !rounded-button whitespace-nowrap">
+                    <i class="ri-send-plane-fill"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assistant Button -->
+<button onclick="toggleAssistant()" class="fixed bottom-4 right-4 bg-primary text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 transition z-40">
+    <i class="ri-customer-service-2-line ri-lg"></i>
+</button>
+
+<!-- Authentication Modal -->
+<div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="flex">
+            <button onclick="switchAuthTab('login')" id="loginTab" class="flex-1 px-6 py-3 text-center font-medium border-b-2 border-primary text-primary">Se connecter</button>
+            <button onclick="switchAuthTab('register')" id="registerTab" class="flex-1 px-6 py-3 text-center font-medium border-b-2 border-gray-200 text-gray-500">S'inscrire</button>
+        </div>
+        <!-- Login Form -->
+        <div id="loginForm" class="p-6">
+            <form action="" method="POST">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                    <input type="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <a href="#" class="text-sm text-primary hover:text-blue-600 mt-1 inline-block">Mot de passe oublié ?</a>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition !rounded-button whitespace-nowrap">Se connecter</button>
+            </form>
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Ou continuer avec</span>
+                    </div>
+                </div>
+                <div class="mt-6 grid grid-cols-2 gap-3">
+                    <button class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                        <i class="ri-google-fill mr-2 text-red-500"></i>
+                        Google
+                    </button>
+                    <button class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                        <i class="ri-facebook-fill mr-2 text-blue-600"></i>
+                        Facebook
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Register Form -->
+        <div id="registerForm" class="p-6 hidden">
+            <form action="" method="POST">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                        <input type="text" name="lastName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
+                        <input type="text" name="firstName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
+                    <input type="password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
+                    <input type="password" name="confirmPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div class="mb-6">
+                    <label class="flex items-center">
+                        <input type="checkbox" required class="mr-2">
+                        <span class="text-sm text-gray-600">J'accepte les <a href="#" class="text-primary hover:text-blue-600">conditions d'utilisation</a> et la <a href="#" class="text-primary hover:text-blue-600">politique de confidentialité</a></span>
+                    </label>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition !rounded-button whitespace-nowrap">S'inscrire</button>
+            </form>
+        </div>
+        <button onclick="closeAuthModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+            <i class="ri-close-line ri-lg"></i>
+        </button>
+    </div>
+</div>
+
+<!-- En-tête avec navigation -->
+<header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="bg-[#FF6B00] text-white py-2">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Flag_of_C%C3%B4te_d%27Ivoire.svg/20px-Flag_of_C%C3%B4te_d%27Ivoire.svg.png" alt="Drapeau" class="w-6 h-4 mr-2">
+                <span class="text-sm font-medium">RÉPUBLIQUE DE CÔTE D'IVOIRE</span>
+            </div>
+            <div class="flex items-center">
+                <span class="text-sm">Union - Discipline - Travail</span>
+            </div>
+        </div>
+    </div>
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center">
+            <div>
+                 <h1 class="text-2xl font-['Pacifico'] text-primary">BROBO</h1>
+                 <p class="text-gray-600 text-sm">Commune de BROBO</p>
+            </div>
+        </div>
+        <!-- Menu Desktop (visible à partir de md:768px) -->
+        <nav class="hidden md:flex space-x-6">
+            <a href="../View/index.php" class="text-gray-600 hover:text-primary transition">Accueil</a>
+            <a href="../View/connexion_decla.php" class="text-gray-600 hover:text-primary transition">Faire une Declaration</a>
+            <a href="../View/citoyen_connexion.php" class="text-gray-600 hover:text-primary transition">Demande d'actes</a>
+            <a href="../View/citoyen_login.php" class="text-gray-600 hover:text-primary transition">Mes demandes</a>
+            <a href="../admin/admin_notice.html" class="text-gray-600 hover:text-primary transitioition">Tableau de bord</a>
+            <a href="../View/contact.html" class="text-primary font-medium">Contact</a>
+          </nav>
+    
+            <!-- Bouton Menu Mobile (visible en dessous de md:768px) -->
+            <button id="menuToggle" class="md:hidden text-primary focus:outline-none">
+                <i class="ri-menu-line text-2xl"></i>
+            </button>
+        </div>
+    
+        <!-- Menu Mobile (masqué par défaut) -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-gray-200 w-full px-4 py-3 shadow-lg">
+        <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+            <a href="../View/index.php" class="py-2 text-gray-600 hover:text-primary">Accueil</a>
+            <a href="../View/connexion_decla.php" class="py-2 text-gray-600 hover:text-primary">Faire une Declaration</a>
+            <a href="../View/citoyen_connexion.php" class="py-2 text-gray-600 hover:text-primary">Demande d'actes</a>
+            <a href="../View/citoyen_login.php" class="py-2 text-gray-600 hover:text-primary">Mes demandes</a>
+            <a href="../admin/admin_notice.html" class="py-2 text-gray-600 hover:text-primary">Tableau de bord</a>
+            <a href="../View/contact.html" class="py-2 text-primary font-medium">Contact</a>
+          </div>
+        </div>
+        
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="min-h-[calc(100vh-73px)]">
+    <!-- Page Header -->
+    <div class="bg-gray-100 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center text-sm text-gray-500 mb-2">
+                <a href="#" data-readdy="true" class="hover:text-primary">Accueil</a>
+                <i class="ri-arrow-right-s-line mx-2"></i>
+                <span class="text-gray-700">Contact</span>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900">Contactez-nous</h1>
+            <p class="mt-2 text-gray-600">Nous sommes à votre disposition pour répondre à toutes vos questions</p>
+        </div>
+    </div>
+
+    <!-- Contact Information Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-map-pin-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Adresse</h3>
+                    <p class="text-gray-600 mb-2">Mairie de BROBO</p>
+                    <p class="text-gray-600">face de l'hopital, Quartier Mairie</p>
+                    <p class="text-gray-600">Brobo, Côte d'Ivoire</p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-time-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Horaires d'ouverture</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Lundi - Jeudi</span>
+                            <span class="text-gray-800 font-medium">08h30 - 17h30</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Vendredi</span>
+                            <span class="text-gray-800 font-medium">08h30 - 16h30</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Samedi</span>
+                            <span class="text-gray-800 font-medium">09h00 - 12h00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Dimanche</span>
+                            <span class="text-gray-800 font-medium">Fermé</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-customer-service-2-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Contact direct</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 mr-3">
+                                <i class="ri-phone-line text-gray-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Téléphone</p>
+                                <p class="font-medium">+225 27 30 65 00 00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 mr-3">
+                                <i class="ri-mail-line text-gray-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Email</p>
+                                <p class="font-medium">contact@mairie-brobo.ci</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 mr-3">
+                                <i class="ri-whatsapp-line text-gray-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">WhatsApp</p>
+                                <p class="font-medium">+225 01 01 02 03 04</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map and Form Section -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Map -->
+                <div class="rounded-lg overflow-hidden shadow-sm h-[450px] bg-white">
+                    <div class="h-full w-full relative overflow-hidden" style="background-image: url('https://public.readdy.ai/gen_page/map_placeholder_1280x720.png'); background-position: center; background-size: cover;">
+                        <div class="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-md">
+                            <h3 class="font-medium text-gray-800 mb-1">Mairie de Brobo</h3>
+                            <p class="text-sm text-gray-600">Quatier Mairie, Brobo</p>
+                        </div>
+                        <div class="absolute bottom-4 right-4">
+                            <a href="https://maps.google.com" target="_blank" class="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-md flex items-center hover:bg-gray-50 transition !rounded-button whitespace-nowrap">
+                                <i class="ri-map-2-line mr-2"></i>
+                                Ouvrir dans Google Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Form -->
+                <div class="bg-white rounded-lg shadow-sm p-8">
+                    <h2 class="text-2xl font-bold mb-6">Envoyez-nous un message</h2>
+                    <form id="contactForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                                <input type="text" name="lastName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
+                                <input type="text" name="firstName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Objet</label>
+                            <div class="relative">
+                                <select name="subject" required class="w-full px-4 py-2 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-primary focus:border-transparent pr-8">
+                                    <option value="">Sélectionnez un objet</option>
+                                    <option value="information">Demande d'information</option>
+                                    <option value="acte">Question sur un acte d'état civil</option>
+                                    <option value="reclamation">Réclamation</option>
+                                    <option value="rendez-vous">Prise de rendez-vous</option>
+                                    <option value="autre">Autre</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <i class="ri-arrow-down-s-line text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                            <textarea name="message" rows="5" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"></textarea>
+                        </div>
+                        <div class="mb-6">
+                            <label class="flex items-center">
+                                <div id="privacyCheckbox" class="custom-checkbox" onclick="toggleCheckbox(this)"></div>
+                                <input type="checkbox" name="privacy" required class="hidden">
+                                <span class="ml-2 text-sm text-gray-600">J'accepte que mes données soient traitées conformément à la <a href="#" class="text-primary hover:text-blue-600">politique de confidentialité</a>.</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition !rounded-button whitespace-nowrap">
+                            Envoyer le message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold mb-2">Questions fréquentes</h2>
+                <p class="text-gray-600">Trouvez rapidement des réponses aux questions les plus courantes</p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto">
+                <div class="space-y-4">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="w-full px-6 py-4 text-left font-medium flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                            <span>Comment obtenir un acte de naissance ?</span>
+                            <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                        </button>
+                        <div class="px-6 py-4 bg-gray-50 hidden">
+                            <p class="text-gray-600">Pour obtenir un acte de naissance, vous pouvez faire une demande en ligne via notre plateforme ou vous présenter directement au guichet de l'état civil de la mairie. Vous devrez fournir des informations telles que votre nom, prénom, date de naissance et les noms de vos parents. Des frais administratifs de 1000 FCFA sont applicables par copie.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="w-full px-6 py-4 text-left font-medium flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                            <span>Quels sont les délais de traitement des demandes ?</span>
+                            <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                        </button>
+                        <div class="px-6 py-4 bg-gray-50 hidden">
+                            <p class="text-gray-600">Les délais de traitement varient selon le type de demande. Pour les actes de naissance et de mariage, comptez 3 à 5 jours ouvrables. Pour les actes de décès, le délai est généralement de 2 jours ouvrables. Les demandes urgentes peuvent être traitées en 24h moyennant des frais supplémentaires.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="w-full px-6 py-4 text-left font-medium flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                            <span>Comment suivre l'état d'avancement de ma demande ?</span>
+                            <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                        </button>
+                        <div class="px-6 py-4 bg-gray-50 hidden">
+                            <p class="text-gray-600">Vous pouvez suivre l'état d'avancement de votre demande en vous connectant à votre compte sur notre plateforme. Dans la section "Mes demandes", vous trouverez toutes les informations concernant le statut de votre demande. Vous recevrez également des notifications par email à chaque étape du traitement.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="w-full px-6 py-4 text-left font-medium flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                            <span>Quels sont les moyens de paiement acceptés ?</span>
+                            <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                        </button>
+                        <div class="px-6 py-4 bg-gray-50 hidden">
+                            <p class="text-gray-600">Nous acceptons plusieurs moyens de paiement : carte bancaire, mobile money (Orange Money, MTN Mobile Money, Moov Money), PayPal et paiement en espèces au guichet de la mairie. Pour les paiements en ligne, une confirmation vous sera envoyée par email après transaction.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <button class="w-full px-6 py-4 text-left font-medium flex justify-between items-center focus:outline-none" onclick="toggleFaq(this)">
+                            <span>Comment signaler une erreur sur un acte d'état civil ?</span>
+                            <i class="ri-arrow-down-s-line transition-transform duration-200"></i>
+                        </button>
+                        <div class="px-6 py-4 bg-gray-50 hidden">
+                            <p class="text-gray-600">Pour signaler une erreur sur un acte d'état civil, vous devez remplir le formulaire de réclamation disponible sur notre site ou à l'accueil de la mairie. Joignez une copie de l'acte concerné et tout document justifiant la correction demandée. Après vérification, le service d'état civil procédera à la rectification si la demande est justifiée.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <p class="text-gray-600 mb-4">Vous n'avez pas trouvé la réponse à votre question ?</p>
+                    <a href="#contactForm" class="inline-flex items-center text-primary hover:text-blue-600">
+                        <span>Contactez-nous directement</span>
+                        <i class="ri-arrow-right-line ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Departments Section -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold mb-2">Nos services</h2>
+                <p class="text-gray-600">Contactez directement le service concerné par votre demande</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-file-user-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Service d'état civil</h3>
+                    <p class="text-gray-600 mb-4">Gestion des actes de naissance, mariage, décès et autres documents officiels.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <i class="ri-phone-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">+225 27 30 65 00 01</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="ri-mail-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">etatcivil@mairie-brobo.ci</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-building-4-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Service urbanisme</h3>
+                    <p class="text-gray-600 mb-4">Permis de construire, autorisations d'urbanisme et aménagement du territoire.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <i class="ri-phone-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">+225 27 30 64 00 02</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="ri-mail-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">urbanisme@mairie-brobo.ci</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-bank-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Service financier</h3>
+                    <p class="text-gray-600 mb-4">Taxes locales, redevances et gestion des paiements administratifs.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <i class="ri-phone-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">+225 27 30 64 00 03</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="ri-mail-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">finance@mairie-brobo.ci</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-community-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Service social</h3>
+                    <p class="text-gray-600 mb-4">Aide sociale, soutien aux personnes vulnérables et actions communautaires.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <i class="ri-phone-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">+225 27 30 64 00 04</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="ri-mail-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">social@mairie-brobo.ci</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-government-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Cabinet du maire</h3>
+                    <p class="text-gray-600 mb-4">Rendez-vous avec le maire, protocole et relations publiques.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <i class="ri-phone-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">+225 27 30 64 00 05</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="ri-mail-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">cabinet@mairie-brobo.ci</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-4">
+                        <i class="ri-customer-service-2-line text-primary ri-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Service réclamations</h3>
+                    <p class="text-gray-600 mb-4">Gestion des plaintes, suggestions et médiation avec les services municipaux.</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <i class="ri-phone-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">+225 27 30 64 00 06</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="ri-mail-line text-gray-400 mr-2"></i>
+                            <span class="text-gray-600">reclamations@mairie-brobo.ci</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Media Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold mb-2">Suivez-nous</h2>
+                <p class="text-gray-600">Restez informé des actualités et services de la mairie</p>
+            </div>
+            
+            <div class="flex justify-center space-x-6">
+                <a href="m.facebook.com" class="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 hover:bg-blue-100 hover:text-primary transition">
+                    <i class="ri-facebook-fill ri-lg"></i>
+                </a>
+                <a href="wwww.twitter.com" class="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 hover:bg-blue-100 hover:text-primary transition">
+                    <i class="ri-twitter-fill ri-lg"></i>
+                </a>
+                <a href="www.instagram.com" class="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 hover:bg-blue-100 hover:text-primary transition">
+                    <i class="ri-instagram-line ri-lg"></i>
+                </a>
+                <a href="m.youtube.com" class="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 hover:bg-blue-100 hover:text-primary transition">
+                    <i class="ri-youtube-line ri-lg"></i>
+                </a>
+                <a href="m.linkedin.com" class="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 hover:bg-blue-100 hover:text-primary transition">
+                    <i class="ri-linkedin-fill ri-lg"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Pied de page -->
+<footer class="bg-[#1c2735] text-[#a0a9b8]">
+    <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row md:justify-between md:items-start gap-10 md:gap-0">
+     <div class="md:w-1/4 space-y-4">
+      <div class="text-white font-script text-2xl select-none" style="font-family: 'Pacifico', cursive;">
+       BROBO
+      </div>
+      <p class="text-sm leading-relaxed max-w-[220px]">
+       Plateforme officielle de gestion des actes d'état civil de la commune de BroBo.
+      </p>
+      <div class="flex space-x-4">
+       <a aria-label="Facebook" class="w-8 h-8 rounded-full bg-[#2f3a4a] flex items-center justify-center hover:bg-[#3b4a6b] transition-colors" href="m.facebok.com">
+        <i class="fab fa-facebook-f text-[#a0a9b8] text-sm">
+        </i>
+       </a>
+       <a aria-label="Twitter" class="w-8 h-8 rounded-full bg-[#2f3a4a] flex items-center justify-center hover:bg-[#3b4a6b] transition-colors" href="wwww.twitter.com">
+        <i class="fab fa-twitter text-[#a0a9b8] text-sm">
+        </i>
+       </a>
+       <a aria-label="Instagram" class="w-8 h-8 rounded-full bg-[#2f3a4a] flex items-center justify-center hover:bg-[#3b4a6b] transition-colors" href="m.instagram.com">
+        <i class="fab fa-instagram text-[#a0a9b8] text-sm">
+        </i>
+       </a>
+      </div>
+     </div>
+     <div class="md:w-1/5 space-y-2">
+      <h3 class="text-white font-semibold text-sm mb-3">
+       Liens rapides
+      </h3>
+      <ul class="space-y-2 text-sm">
+       <li>
+        <a class="hover:text-white transition-colors" href="../View/index.php">
+         Accueil
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="../View/connexion_citoyen.php">
+         Demande d'actes
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="../View/citoyen_login.php">
+         Mes demandes
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="../admin/admin_notice.html">
+         Tableau de bord admin
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="../View/contact.html">
+         Contact
+        </a>
+       </li>
+      </ul>
+     </div>
+     <div class="md:w-1/5 space-y-2">
+      <h3 class="text-white font-semibold text-sm mb-3">
+       Informations
+      </h3>
+      <ul class="space-y-2 text-sm">
+       <li>
+        <a class="hover:text-white transition-colors" href="#">
+         À propos de
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="#">
+         Mentions légales
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="#">
+         Politique de confidentialité
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="#">
+         Conditions d'utilisation
+        </a>
+       </li>
+       <li>
+        <a class="hover:text-white transition-colors" href="#">
+         Plan du site
+        </a>
+       </li>
+      </ul>
+     </div>
+     <div class="md:w-1/4 space-y-2 text-sm">
+      <h3 class="text-white font-semibold text-sm mb-3">
+       Contact
+      </h3>
+      <ul class="space-y-3">
+       <li class="flex items-start gap-2">
+        <i class="fas fa-map-marker-alt mt-1 text-[#a0a9b8]">
+        </i>
+        <span>
+        Quatier Mairie, BroBo, Côte d'Ivoire
+        </span>
+       </li>
+       <li class="flex items-center gap-2">
+        <i class="fas fa-phone-alt text-[#a0a9b8]">
+        </i>
+        <span>
+         +225 27 30 64 00 00
+        </span>
+       </li>
+       <li class="flex items-center gap-2">
+        <i class="fas fa-envelope text-[#a0a9b8]">
+        </i>
+        <span>
+         contact@mairie-brobo.ci
+        </span>
+       </li>
+       <li class="flex items-center gap-2">
+        <i class="fas fa-clock text-[#a0a9b8]">
+        </i>
+        <span>
+         Lun-Ven : 8h30-17h30
+        </span>
+       </li>
+      </ul>
+     </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-6 py-4 border-t border-[#2f3a4a] flex flex-col md:flex-row justify-between items-center text-xs text-[#6b7587]">
+     <div>
+      © 2025 La commune de BroBo. Tous droits réservés.
+     </div>
+     <div class="flex items-center space-x-6 mt-3 md:mt-0">
+      <img alt="MTN CI logo" class="h-6 w-auto" height="24" src="../public/image/MTN.png" width="60"/>
+      <img alt="Orange CI logo" class="h-6 w-auto" height="24" src="../public/image/ORANGE.png" width="60"/>
+      <img alt="Moov CI logo" class="h-6 w-auto" height="24" src="../public/image/MOOV.png" width="60"/>
+    </div>
+    <button aria-label="Support chat" class="fixed bottom-6 right-6 bg-[#4a90e2] w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-[#357abd] transition-colors">
+     <i class="fas fa-headset text-white text-lg">
+     </i>
+    </button>
+</footer>
+
+<!-- Success Message Modal -->
+<div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ri-check-line text-green-600 ri-2x"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Message envoyé avec succès</h3>
+            <p class="text-gray-600 mb-6">Nous avons bien reçu votre message. Notre équipe vous répondra dans les plus brefs délais.</p>
+            <button onclick="closeSuccessModal()" class="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-600 transition !rounded-button whitespace-nowrap">
+                Fermer
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Assistant functions
+function toggleAssistant() {
+    const modal = document.getElementById('assistantModal');
+    modal.classList.toggle('hidden');
+}
+
+function addMessage(message, isUser = false) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'flex items-start';
+    const iconDiv = document.createElement('div');
+    iconDiv.className = `w-8 h-8 rounded-full ${isUser ? 'bg-gray-200' : 'bg-primary'} flex items-center justify-center ${isUser ? 'text-gray-600' : 'text-white'} mr-3`;
+    iconDiv.innerHTML = `<i class="ri-${isUser ? 'user-line' : 'customer-service-2-line'}"></i>`;
+    const messageContent = document.createElement('div');
+    messageContent.className = `${isUser ? 'bg-white border border-gray-200' : 'bg-gray-100'} rounded-lg p-3 max-w-[80%]`;
+    messageContent.innerHTML = `<p>${message}</p>`;
+    messageDiv.appendChild(iconDiv);
+    messageDiv.appendChild(messageContent);
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Auth Modal functions
+function openAuthModal() {
+    const modal = document.getElementById('authModal');
+    modal.classList.remove('hidden');
+}
+
+function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    modal.classList.add('hidden');
+}
+
+function switchAuthTab(tab) {
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    if (tab === 'login') {
+        loginTab.classList.add('border-primary', 'text-primary');
+        loginTab.classList.remove('border-gray-200', 'text-gray-500');
+        registerTab.classList.remove('border-primary', 'text-primary');
+        registerTab.classList.add('border-gray-200', 'text-gray-500');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+    } else {
+        registerTab.classList.add('border-primary', 'text-primary');
+        registerTab.classList.remove('border-gray-200', 'text-gray-500');
+        loginTab.classList.remove('border-primary', 'text-primary');
+        loginTab.classList.add('border-gray-200', 'text-gray-500');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+    }
+}
+
+// Notifications dropdown
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationsDropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+// Custom checkbox toggle
+function toggleCheckbox(element) {
+    element.classList.toggle('checked');
+    const checkbox = element.nextElementSibling;
+    checkbox.checked = element.classList.contains('checked');
+}
+
+// FAQ toggle
+function toggleFaq(button) {
+    const content = button.nextElementSibling;
+    const icon = button.querySelector('i');
+    
+    content.classList.toggle('hidden');
+    if (!content.classList.contains('hidden')) {
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        icon.style.transform = 'rotate(0)';
+    }
+}
+
+// Success modal
+function showSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.classList.remove('hidden');
+}
+
+function closeSuccessModal() {
+    const modal = document.getElementById('successModal');
+    modal.classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Assistant form handling
+    const assistantForm = document.getElementById('assistantForm');
+    if (assistantForm) {
+        assistantForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (message) {
+                addMessage(message, true);
+                input.value = '';
+                // Simulate assistant response
+                setTimeout(() => {
+                    addMessage("Merci pour votre message. Comment puis-je vous aider concernant la mairie de Yamoussoukro ?");
+                }, 1000);
+            }
+        });
+    }
+
+    // Contact form handling
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(contactForm);
+            console.log('Form submitted:', Object.fromEntries(formData));
+            
+            // Show success message
+            showSuccessModal();
+            contactForm.reset();
+            
+            // Reset custom checkbox
+            const checkbox = document.getElementById('privacyCheckbox');
+            if (checkbox) {
+                checkbox.classList.remove('checked');
+            }
+        });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        const notifIcon = document.querySelector('.w-10.h-10.flex.items-center.justify-center.rounded-full.bg-gray-100.cursor-pointer');
+        const notifDropdown = document.getElementById('notificationsDropdown');
+        
+        if (notifIcon && notifDropdown && !notifIcon.contains(event.target) && !notifDropdown.contains(event.target)) {
+            notifDropdown.classList.add('hidden');
+        }
+    });
+});
+
+// Mobile menu - Optimisé pour la navigation
+document.getElementById('menuToggle')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobileMenu');
+    menu.classList.toggle('hidden');
+    document.body.classList.toggle('overflow-hidden');
+    
+    const icon = this.querySelector('i');
+    icon.classList.toggle('ri-menu-line');
+    icon.classList.toggle('ri-close-line');
+});
+</script>
+</body>
+</html>
